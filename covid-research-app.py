@@ -1,3 +1,4 @@
+#import packges to be used 
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -6,9 +7,11 @@ from datetime import date
 
 alt.data_transformers.disable_max_rows()
 
+#setting variables which will contain geojson for county boundaries/mapping and COVID-19 case data from Texas Department of Health and Human Services
 counties = alt.topo_feature('https://raw.githubusercontent.com/deldersveld/topojson/master/countries/us-states/TX-48-texas-counties.json','cb_2015_texas_county_20m')
-#source = pd.read_csv('compiled-covid-cases-test-v1.csv',parse_dates=['date'])
-source = pd.read_csv('test1.csv',parse_dates=['date'])
+
+url = 'https://raw.githubusercontent.com/msquaredsa-ds-dev/covid-19-streamlit/master/compiled-covid-cases.csv'
+source = pd.read_csv(url,parse_dates=['date'])
 
 min_date = source['date'].min()
 max_date = source['date'].max()
@@ -19,29 +22,26 @@ date_value = date_slider.strftime('%B %d, %Y')
 
 selection = alt.selection_single(on='mouseover', empty='none')
 
+#chloropleth map for all of Texas
 tx_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
     color=alt.condition(selection, alt.value('black'), 'rate:Q'),
     tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
 ).transform_lookup(
     lookup='[properties][NAME]',
     from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
-    #from_=alt.LookupData(source,'county',['cases'])
 ).properties(
     width=700,
     height=500
 ).add_selection(
     selection
-)#.transform_filter(
-    #alt.FieldEqualPredicate(field='[properties][NAME]', equal='Bexar')
-    #alt.FieldEqualPredicate(field='date', equal=d)
-#)
+)
+
 st.title('COVID-19 Research')
 st.title('Texas')
 
 st.altair_chart(tx_chart,use_container_width=True)
 
-#options = st.sidebar.multiselect('Which counties would you like to view?', source['county'])
-
+#chloropleth map for San Antonio (Bexar) and surrounding counties
 st.title('San Antonio')
 
 sa_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
@@ -61,6 +61,7 @@ sa_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 
 st.altair_chart(sa_chart,use_container_width=True)
 
+#chloropleth map for Austin (Travis) and surrounding counties
 st.title('Austin')
 
 aus_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
@@ -80,6 +81,7 @@ aus_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 
 st.altair_chart(aus_chart,use_container_width=True)
 
+#chloropleth map for Houston (Harris) and surrounding counties
 st.title('Houston')
 
 hou_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
@@ -99,6 +101,7 @@ hou_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 
 st.altair_chart(hou_chart,use_container_width=True)
 
+#chloropleth map for Dallas (Dallas) and surrounding counties
 st.title('Dallas')
 
 dal_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
