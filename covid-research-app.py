@@ -199,12 +199,12 @@ elif data_view == 'Line':
 ### IN DEVELOPMENT >>>
 
 #Interventions based on date - To Be Developed
-#if date_slider == date(2020,3,4):
-#    st.sidebar.write('Intervention measure 1, 2, and 3')
-#elif date_slider == date(2020,5,7):
-#    st.sidebar.write('Intervention measure 4, 5, and 6')
-#elif date_slider == date(2020,7,9):
-#    st.sidebar.write('Intervention measure 7, 8, and 9')
+if date_slider == date(2020,3,4):
+    st.sidebar.write('Intervention measure 1, 2, and 3')
+elif date_slider == date(2020,5,7):
+    st.sidebar.write('Intervention measure 4, 5, and 6')
+elif date_slider == date(2020,7,9):
+    st.sidebar.write('Intervention measure 7, 8, and 9')
 
 #The following code will enable automation through the progression of days and update the map accordingly. This will be added in Phase 2, with a toggle switch on the sidebar to enable users to turn it "on" or "off"
 
