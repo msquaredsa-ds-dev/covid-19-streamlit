@@ -10,11 +10,11 @@ alt.data_transformers.disable_max_rows()
 #setting variables which will contain geojson for county boundaries/mapping and COVID-19 case data from Texas Department of Health and Human Services
 counties = alt.topo_feature('https://raw.githubusercontent.com/deldersveld/topojson/master/countries/us-states/TX-48-texas-counties.json','cb_2015_texas_county_20m')
 
-url = 'https://raw.githubusercontent.com/msquaredsa-ds-dev/covid-19-streamlit/master/compiled-covid-cases.csv'
-source = pd.read_csv(url,parse_dates=['date'])
+url = 'https://raw.githubusercontent.com/msquaredsa-ds-dev/covid-19-streamlit/master/cases-cumulative-processed.csv'
+cumulative_cases = pd.read_csv(url,parse_dates=['date'])
 
-min_date = source['date'].min()
-max_date = source['date'].max()
+min_date = cumulative_cases['date'].min()
+max_date = cumulative_cases['date'].max()
 
 date_slider = st.sidebar.slider('Date',min_value=min_date.date(),max_value=max_date.date())
 date_value = date_slider.strftime('%B %d, %Y')
@@ -25,11 +25,11 @@ selection = alt.selection_single(on='mouseover', empty='none')
 
 #chloropleth map for all of Texas
 tx_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-    color=alt.condition(selection, alt.value('black'), 'rate:Q'),
-    tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
+    color=alt.condition(selection, alt.value('black'), 'cases-per-100K:Q'),
+    tooltip=['[properties][NAME]:N','cases:Q','population:Q','cases-per-100K:Q']
 ).transform_lookup(
     lookup='[properties][NAME]',
-    from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
+    from_=alt.LookupData(cumulative_cases[cumulative_cases['date'] == date_value],'county',['cases','population','cases-per-100K'])
 ).properties(
     width=800,
     height=600
@@ -48,11 +48,11 @@ st.title('Bexar County (San Antonio)')
 
 #create chloropleth map for San Antonio and surronding counties
 sa_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-    color=alt.condition(selection, alt.value('black'), 'rate:Q'),
-    tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
+    color=alt.condition(selection, alt.value('black'), 'cases-per-100K:Q'),
+    tooltip=['[properties][NAME]:N','cases:Q','population:Q','cases-per-100K:Q']
 ).transform_lookup(
     lookup='[properties][NAME]',
-    from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
+    from_=alt.LookupData(cumulative_cases[cumulative_cases['date'] == date_value],'county',['cases','population','cases-per-100K'])
 ).properties(
     width=800,
     height=600
@@ -63,11 +63,11 @@ sa_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 )
 
 #create line chart for San Antonio and surrounding coounties
-sa_line = alt.Chart(source).mark_line().encode(
+sa_line = alt.Chart(cumulative_cases).mark_line().encode(
     x='date',
-    y='rate:Q',
+    y='cases-per-100K:Q',
     color='county',
-    tooltip=['date','county','cases','population','rate']
+    tooltip=['date','county','cases','population','cases-per-100K']
 ).transform_filter(
     alt.FieldOneOfPredicate(field='county', oneOf=['Bexar', 'Medina', 'Bandera','Kendall','Comal','Guadalupe','Wilson','Atascosa'])
 ).properties(
@@ -87,11 +87,11 @@ st.title('Travis County (Austin)')
 
 #create chloropleth map for Austin and surrounding counties
 aus_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-    color=alt.condition(selection, alt.value('black'), 'rate:Q'),
-    tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
+    color=alt.condition(selection, alt.value('black'), 'cases-per-100K:Q'),
+    tooltip=['[properties][NAME]:N','cases:Q','population:Q','cases-per-100K:Q']
 ).transform_lookup(
     lookup='[properties][NAME]',
-    from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
+    from_=alt.LookupData(cumulative_cases[cumulative_cases['date'] == date_value],'county',['cases','population','cases-per-100K'])
 ).properties(
     width=800,
     height=600
@@ -102,11 +102,11 @@ aus_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 )
 
 #create line chart for Austin and surrounding counties
-aus_line = alt.Chart(source).mark_line().encode(
+aus_line = alt.Chart(cumulative_cases).mark_line().encode(
     x='date',
-    y='rate:Q',
+    y='cases-per-100K:Q',
     color='county',
-    tooltip=['date','county','cases','population','rate']
+    tooltip=['date','county','cases','population','cases-per-100K']
 ).transform_filter(
     alt.FieldOneOfPredicate(field='county', oneOf=['Travis', 'Hays', 'Blanco','Burnet','Williamson','Lee','Bastrop','Caldwell'])
 ).properties(
@@ -125,11 +125,11 @@ st.title('Harris County (Houston)')
 
 #create chloropleth map for Houston and surrounding counties
 hou_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-    color=alt.condition(selection, alt.value('black'), 'rate:Q'),
-    tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
+    color=alt.condition(selection, alt.value('black'), 'cases-per-100K:Q'),
+    tooltip=['[properties][NAME]:N','cases:Q','population:Q','cases-per-100K:Q']
 ).transform_lookup(
     lookup='[properties][NAME]',
-    from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
+    from_=alt.LookupData(cumulative_cases[cumulative_cases['date'] == date_value],'county',['cases','population','cases-per-100K'])
 ).properties(
     width=800,
     height=600
@@ -140,11 +140,11 @@ hou_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 )
 
 #create line chart for Houston and surrounding counties
-hou_line = alt.Chart(source).mark_line().encode(
+hou_line = alt.Chart(cumulative_cases).mark_line().encode(
     x='date',
-    y='rate:Q',
+    y='cases-per-100K:Q',
     color='county',
-    tooltip=['date','county','cases','population','rate']
+    tooltip=['date','county','cases','population','cases-per-100K']
 ).transform_filter(
     alt.FieldOneOfPredicate(field='county', oneOf=['Waller', 'Montgomery', 'Harris','Liberty','Chambers','Galveston','Brazoria','Fort Bend'])
 ).properties(
@@ -163,11 +163,11 @@ st.title('Dallas County (Dallas)')
 
 #create chloropleth map for Dallas and surrounding counties
 dal_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-    color=alt.condition(selection, alt.value('black'), 'rate:Q'),
-    tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
+    color=alt.condition(selection, alt.value('black'), 'cases-per-100K:Q'),
+    tooltip=['[properties][NAME]:N','cases:Q','population:Q','cases-per-100K:Q']
 ).transform_lookup(
     lookup='[properties][NAME]',
-    from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
+    from_=alt.LookupData(cumulative_cases[cumulative_cases['date'] == date_value],'county',['cases','population','cases-per-100K'])
 ).properties(
     width=800,
     height=600
@@ -178,11 +178,11 @@ dal_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
 )
 
 #create line chart for Dallas and surrounding counties
-dal_line = alt.Chart(source).mark_line().encode(
+dal_line = alt.Chart(cumulative_cases).mark_line().encode(
     x='date',
-    y='rate:Q',
+    y='cases-per-100K:Q',
     color='county',
-    tooltip=['date','county','cases','population','rate']
+    tooltip=['date','county','cases','population','cases-per-100K']
 ).transform_filter(
     alt.FieldOneOfPredicate(field='county', oneOf=['Dallas', 'Tarrant', 'Denton','Collin','Rockwall','Kaufman','Ellis','Johnson'])
 ).properties(
@@ -217,8 +217,8 @@ elif date_slider == date(2020,7,9):
 #    for n in range(int ((date2 - date1).days)+1):
 #        yield date1 + timedelta(n)
 
-#start_dt = source['date'].min()
-#end_dt = source['date'].max()
+#start_dt = cumulative_cases['date'].min()
+#end_dt = cumulative_cases['date'].max()
 
 #chart = st.empty()
 #i = 0
@@ -230,11 +230,11 @@ elif date_slider == date(2020,7,9):
 #    date_value = dt.strftime('%B %d, %Y')
 
 #    tx_chart = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-#        color=alt.condition(selection, alt.value('black'), 'rate:Q'),
-#        tooltip=['[properties][NAME]:N','cases:Q','population:Q','rate:Q']
+#        color=alt.condition(selection, alt.value('black'), 'cases-per-100K:Q'),
+#        tooltip=['[properties][NAME]:N','cases:Q','population:Q','cases-per-100K:Q']
 #    ).transform_lookup(
 #        lookup='[properties][NAME]',
-#        from_=alt.LookupData(source[source['date'] == date_value],'county',['cases','population','rate'])
+#        from_=alt.LookupData(cumulative_cases[cumulative_cases['date'] == date_value],'county',['cases','population','cases-per-100K'])
 #    ).properties(
 #        width=700,
 #        height=500
