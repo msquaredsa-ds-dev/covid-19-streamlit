@@ -202,7 +202,7 @@ def line_chart_linear_regression_post30(data, start_date, end_date, county):
     x = pd.Series(split_dash(start_date,'-')).apply(int)
     y = pd.Series(split_dash(end_date,'-')).apply(int)
 
-    chart = alt.Chart(data[(data['date'] < datetime(y[0],y[1],y[2],0,0,0)) & (data['date'] > datetime(x[0],x[1],x[2],0,0,0))]).mark_line().encode(
+    chart = alt.Chart(data[(data['date'] < datetime(y[0],y[1],y[2],0,0,0)) & (data['date'] >= datetime(x[0],x[1],x[2],0,0,0))]).mark_line().encode(
     x = alt.X('monthdate(date)',axis=alt.Axis(title='Date')),
     y = alt.Y('cases-per-100K',axis=alt.Axis(title='')),
     tooltip = ['date','county','cases-per-100K'],
@@ -284,6 +284,40 @@ if major_metro == 'San Antonio':
     st.write('')
 
     st.altair_chart((line_chart_linear_regression_pre30(daily_cases,'2020-04-20','2020-05-20','Bexar') | line_chart_linear_regression_post30(daily_cases,'2020-05-20','2020-06-20','Bexar')),use_container_width=False)
+
+    
+
+
+    ### SPACING ###
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('## Histogram of Daily Incidence for Rural Counties Surrounding Bexar County')
+    st.write('### Pre/Post "Stay Home Work Safe Order"')
+    st.write('')
+    st.write('')
+    st.write('')
+    
+    
+    cases_before_stay_home = daily_cases[(daily_cases['date'] < datetime(2020,5,20)) & (daily_cases['date'] >= datetime(2020,4,20)) & (daily_cases['county'].isin(['Medina','Bandera','Kendall','Comal','Guadalupe','Wilson','Atascosa']))]
+    cases_after_stay_home = daily_cases[(daily_cases['date'] < datetime(2020,6,20)) & (daily_cases['date'] >= datetime(2020,5,20)) & (daily_cases['county'].isin(['Medina','Bandera','Kendall','Comal','Guadalupe','Wilson','Atascosa']))]
+
+    histo_cases_before = alt.Chart(cases_before_stay_home).mark_bar().encode(
+        alt.X('cases-per-100K', bin=alt.Bin(extent=[0,100],step=2),axis=alt.Axis(title='Cases per 100K (binned)')),
+        alt.Y('count()',scale=alt.Scale(domain=(0,180))),
+        tooltip=['count()']
+    ).properties(title='Cases Before',height=500,width=700)
+
+    histo_cases_after = alt.Chart(cases_after_stay_home).mark_bar().encode(
+        alt.X('cases-per-100K', bin=alt.Bin(extent=[0,100],step=2), axis=alt.Axis(title='Cases per 100K (binned)')),
+        alt.Y('count()',scale=alt.Scale(domain=(0,180)),axis=alt.Axis(title='')),
+        tooltip=['count()']
+    ).properties(title='Cases After',height=500,width=700)
+
+    st.altair_chart(histo_cases_before | histo_cases_after,use_container_width=False)
+
+
 
 
     ### SPACING AND TITLES ###    
@@ -420,6 +454,36 @@ elif major_metro == 'Houston':
     st.altair_chart((line_chart_linear_regression_pre30(daily_cases,'2020-04-01','2020-05-01','Harris') | line_chart_linear_regression_post30(daily_cases,'2020-05-01','2020-06-01','Harris')),use_container_width=False)
 
 
+
+
+    ## SPACING ###
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('## Histogram of Daily Incidence for Rural Counties Surrounding Harris County')
+    st.write('### Pre/Post "Stay Home Work Safe Order"')
+    st.write('')
+    st.write('')
+    st.write('')
+    
+    
+    cases_before_stay_home = daily_cases[(daily_cases['date'] < datetime(2020,5,1)) & (daily_cases['date'] >= datetime(2020,4,1)) & (daily_cases['county'].isin(['Waller', 'Montgomery', 'Liberty','Chambers','Galveston','Brazoria','Fort Bend']))]
+    cases_after_stay_home = daily_cases[(daily_cases['date'] < datetime(2020,6,1)) & (daily_cases['date'] >= datetime(2020,5,1)) & (daily_cases['county'].isin(['Waller','Montgomery', 'Liberty','Chambers','Galveston','Brazoria','Fort Bend']))]
+
+    histo_cases_before = alt.Chart(cases_before_stay_home).mark_bar().encode(
+        alt.X('cases-per-100K', bin=alt.Bin(extent=[0,100],step=2),axis=alt.Axis(title='Cases per 100K (binned)')),
+        alt.Y('count()',scale=alt.Scale(domain=(0,110))),
+        tooltip=['count()']
+    ).properties(title='Cases Before',height=500,width=700)
+
+    histo_cases_after = alt.Chart(cases_after_stay_home).mark_bar().encode(
+        alt.X('cases-per-100K', bin=alt.Bin(extent=[0,100],step=2), axis=alt.Axis(title='Cases per 100K (binned)')),
+        alt.Y('count()',scale=alt.Scale(domain=(0,110)),axis=alt.Axis(title='')),
+        tooltip=['count()']
+    ).properties(title='Cases After',height=500,width=700)
+
+    st.altair_chart(histo_cases_before | histo_cases_after,use_container_width=False)
 
 
 ### CREATE PAGE FOR DALLAS ###
