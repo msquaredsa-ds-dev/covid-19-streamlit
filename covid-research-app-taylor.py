@@ -3,7 +3,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import altair as alt
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 alt.data_transformers.disable_max_rows()
 
@@ -14,6 +14,10 @@ counties = alt.topo_feature('https://raw.githubusercontent.com/deldersveld/topoj
 
 
 ### IMPORT DATA ###
+
+## import daily case data
+url_daily_cases = 'https://raw.githubusercontent.com/msquaredsa-ds-dev/covid-19-streamlit/master/cases-daily-processed.csv'
+daily_cases = pd.read_csv(url_daily_cases,parse_dates=['date'])
 
 ## import weekly case data
 url_weekly_cases = 'https://raw.githubusercontent.com/msquaredsa-ds-dev/covid-19-streamlit/master/cases-weekly-processed.csv'
@@ -149,6 +153,84 @@ def weekly_line_chart(metric, data, county_list):
     return render
 
 
+## Function to create line chart with linear regression line of fit for specific counties (Pre - 30 Days)
+def line_chart_linear_regression_pre30(data, start_date, end_date, county):
+
+    def split_dash(input, character):
+
+        return input.split(character)
+
+    x = pd.Series(split_dash(start_date,'-')).apply(int)
+    y = pd.Series(split_dash(end_date,'-')).apply(int)
+
+    chart = alt.Chart(data[(data['date'] < datetime(y[0],y[1],y[2],0,0,0)) & (data['date'] >= datetime(x[0],x[1],x[2],0,0,0))]).mark_line().encode(
+    x = alt.X('monthdate(date)',axis=alt.Axis(title='Date')),
+    y = alt.Y('cases-per-100K',axis=alt.Axis(title='Cases per 100K')),
+    tooltip = ['date','county','cases-per-100K'],
+    color = 'county'
+    ).transform_filter(
+        alt.FieldOneOfPredicate(field='county', oneOf=[county])
+    ).properties(
+        width=800,
+        height=600,
+        title='Previous 30 Days'
+    )
+
+    line = chart.transform_regression('date','cases-per-100K').mark_line()
+
+    params = chart.transform_regression(
+        'date', 'cases-per-100K', params=True
+    ).mark_text(align='left').encode(
+        x=alt.value(20),  # pixels from left
+        y=alt.value(20),  # pixels from top
+        text='coef:N',
+        tooltip=['rSquared:N','coef:N']
+    )
+
+    render = chart + line + params
+
+    return render
+
+
+## Function to create line chart with linear regression line of fit for specific counties (Post - 30 Days)
+def line_chart_linear_regression_post30(data, start_date, end_date, county):
+
+    def split_dash(input, character):
+
+        return input.split(character)
+
+    x = pd.Series(split_dash(start_date,'-')).apply(int)
+    y = pd.Series(split_dash(end_date,'-')).apply(int)
+
+    chart = alt.Chart(data[(data['date'] < datetime(y[0],y[1],y[2],0,0,0)) & (data['date'] > datetime(x[0],x[1],x[2],0,0,0))]).mark_line().encode(
+    x = alt.X('monthdate(date)',axis=alt.Axis(title='Date')),
+    y = alt.Y('cases-per-100K',axis=alt.Axis(title='')),
+    tooltip = ['date','county','cases-per-100K'],
+    color = 'county'
+    ).transform_filter(
+        alt.FieldOneOfPredicate(field='county', oneOf=[county])
+    ).properties(
+        width=800,
+        height=600,
+        title='Post 30 Days'
+    )
+
+    line = chart.transform_regression('date','cases-per-100K').mark_line()
+
+    params = chart.transform_regression(
+        'date', 'cases-per-100K', params=True
+    ).mark_text(align='left').encode(
+        x=alt.value(20),  # pixels from left
+        y=alt.value(20),  # pixels from top
+        text='coef:N',
+        tooltip=['rSquared:N','coef:N']
+    )
+
+    render = chart + line + params
+
+    return render
+
+
 
 
 ### CREATE PAGE FOR SAN ANTONIO ###
@@ -190,6 +272,18 @@ if major_metro == 'San Antonio':
         weekly_line_chart(metric, weekly_deaths, bexar_county_list)
         
 
+    ### SPACING ###
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('## Daily Incidence Linear Regression')
+    st.write('### Pre/Post "Stay Home Work Safe Order"')
+    st.write('')
+    st.write('')
+    st.write('')
+
+    st.altair_chart((line_chart_linear_regression_pre30(daily_cases,'2020-04-20','2020-05-20','Bexar') | line_chart_linear_regression_post30(daily_cases,'2020-05-20','2020-06-20','Bexar')),use_container_width=False)
 
 
     ### SPACING AND TITLES ###    
@@ -308,6 +402,22 @@ elif major_metro == 'Houston':
     # Mortality
     elif metric == 'Mortality':
         weekly_line_chart(metric, weekly_deaths, harris_county_list)
+
+    
+    
+    
+    ### SPACING ###
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('')
+    st.write('## Daily Incidence Linear Regression')
+    st.write('### Pre/Post "Stay Home Work Safe Order"')
+    st.write('')
+    st.write('')
+    st.write('')
+
+    st.altair_chart((line_chart_linear_regression_pre30(daily_cases,'2020-04-01','2020-05-01','Harris') | line_chart_linear_regression_post30(daily_cases,'2020-05-01','2020-06-01','Harris')),use_container_width=False)
 
 
 
