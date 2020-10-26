@@ -58,7 +58,7 @@ dallas_county_list = ['Dallas', 'Tarrant', 'Denton','Collin','Rockwall','Kaufman
 metric = st.sidebar.radio('Measure:',('Incidence','Mortality'))
 
 ## Create widget for toggling between metros
-major_metro = st.sidebar.radio('Major Metro:',('San Antonio','Austin','Houston','Dallas'))
+major_metro = st.sidebar.radio('Major Metro:',('Texas','San Antonio','Austin','Houston','Dallas'))
 
 ## Create date slider widget
 if metric == 'Incidence':
@@ -80,7 +80,7 @@ elif metric == 'Mortality':
 ### FUNCTIONS ###
 
 ## Function to create a chloropleth map using cumulative data
-def cumulative_per_100k_over_time(metric, data, county_list):
+def cumulative_per_100k_over_time(metric, data, county_list=None):
 
     if metric == 'Incidence':
         st.write('## Cumulative Cases per 100K People Over Time')
@@ -98,20 +98,36 @@ def cumulative_per_100k_over_time(metric, data, county_list):
 
     selection = alt.selection_single(on='mouseover', empty='none')
 
-    chloropleth_map = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
-        color=alt.condition(selection, alt.value('black'), core_metric+'-per-100K:Q'),
-        tooltip=['[properties][NAME]:N',core_metric+':Q','population:Q',core_metric+'-per-100K:Q']
-    ).transform_lookup(
-        lookup='[properties][NAME]',
-        from_=alt.LookupData(data[data['date'] == date_value],'county',[core_metric,'population',core_metric+'-per-100K'])
-    ).properties(
-        width=800,
-        height=600
-    ).add_selection(
-        selection
-    ).transform_filter(
-        alt.FieldOneOfPredicate(field='[properties][NAME]', oneOf=county_list)
-    )
+    
+    if county_list == None:
+        chloropleth_map = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
+            color=alt.condition(selection, alt.value('black'), core_metric+'-per-100K:Q'),
+            tooltip=['[properties][NAME]:N',core_metric+':Q','population:Q',core_metric+'-per-100K:Q']
+        ).transform_lookup(
+            lookup='[properties][NAME]',
+            from_=alt.LookupData(data[data['date'] == date_value],'county',[core_metric,'population',core_metric+'-per-100K'])
+        ).properties(
+            width=800,
+            height=600
+        ).add_selection(
+            selection
+        )
+
+    else:
+        chloropleth_map = alt.Chart(counties).mark_geoshape(stroke='grey').encode(
+            color=alt.condition(selection, alt.value('black'), core_metric+'-per-100K:Q'),
+            tooltip=['[properties][NAME]:N',core_metric+':Q','population:Q',core_metric+'-per-100K:Q']
+        ).transform_lookup(
+            lookup='[properties][NAME]',
+            from_=alt.LookupData(data[data['date'] == date_value],'county',[core_metric,'population',core_metric+'-per-100K'])
+        ).properties(
+            width=800,
+            height=600
+        ).add_selection(
+            selection
+        ).transform_filter(
+            alt.FieldOneOfPredicate(field='[properties][NAME]', oneOf=county_list)
+        )
 
     render = st.altair_chart(chloropleth_map,use_container_width=False)
     return render
@@ -231,10 +247,30 @@ def line_chart_linear_regression_post30(data, start_date, end_date, county):
     return render
 
 
+### CREATE PAGE FOR TEXAS ###
+if major_metro == 'Texas':
+    
+    
+    ## Create titles ##
+    st.title('Texas Counties')
+    st.subheader('(Based on data from the State Dept. of Health and Human Services)')
+    st.write('')
+    st.write('')
+
+
+     ## Create chloropleth map for San Antonio and surronding counties and render based on radio button toggle for Incidence or Mortality ##
+    # Incidence
+    if metric == 'Incidence':
+        cumulative_per_100k_over_time(metric, cumulative_cases)
+
+    # Mortality
+    elif metric == 'Mortality':
+        cumulative_per_100k_over_time(metric, cumulative_deaths)
+
 
 
 ### CREATE PAGE FOR SAN ANTONIO ###
-if major_metro == 'San Antonio':
+elif major_metro == 'San Antonio':
 
 
     ## Create titles ##
